@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Events — Demonstração</title>
+<style>
+  :root {
+    --bg: #0b1020; --surface: #141b33; --surface-2: #1c2547;
+    --text: #e8ecf8; --muted: #a9b3d1;
+    --blue: #3b82f6; --cyan: #22d3ee; --purple: #a855f7;
+    --focus: #facc15; --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+  }
+  .skip { position: absolute; left: -999px; }
+  .skip:focus { left: 16px; top: 16px; background: var(--focus); color: #000; padding: 8px 12px; border-radius: 8px; z-index: 10; }
+  header {
+    padding: 32px 16px 24px; text-align: center;
+    background: linear-gradient(135deg, #1e3a8a 0%, #4c1d95 100%);
+    border-bottom: 3px solid var(--cyan);
+  }
+  header h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: .5px; }
+  header h1 span { color: var(--cyan); }
+  header p { margin: 6px 0 0; color: #dbe4ff; }
+  .badge { display: inline-block; margin-top: 10px; font-size: .78rem; padding: 3px 10px; border-radius: 999px; background: rgba(0,0,0,.35); color: #fde68a; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+  .controls {
+    display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;
+    background: var(--surface); padding: 16px; border-radius: var(--radius); margin-bottom: 8px;
+  }
+  label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: 4px; }
+  input, select {
+    width: 100%; font: inherit; color: var(--text); background: var(--surface-2);
+    border: 1px solid #33406e; border-radius: 10px; padding: 10px 12px; min-height: 44px;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  #status { color: var(--muted); font-size: .9rem; margin: 8px 4px 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; list-style: none; padding: 0; margin: 0; }
+  .card {
+    background: var(--surface); border-radius: var(--radius); padding: 18px;
+    border-top: 4px solid var(--blue); display: flex; flex-direction: column; gap: 8px;
+  }
+  .card[data-cat="Workshop"] { border-top-color: var(--cyan); }
+  .card[data-cat="Palestra"] { border-top-color: var(--purple); }
+  .card h2 { margin: 0; font-size: 1.15rem; }
+  .tag { align-self: flex-start; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); color: var(--cyan); }
+  .meta { margin: 0; padding: 0; list-style: none; font-size: .92rem; color: var(--muted); }
+  .meta strong { color: var(--text); font-weight: 600; }
+  .card p { margin: 0; font-size: .95rem; }
+  .empty { text-align: center; padding: 40px 16px; background: var(--surface); border-radius: var(--radius); }
+  .empty button { margin-top: 12px; font: inherit; padding: 10px 18px; min-height: 44px; border: 0; border-radius: 10px; background: #2563eb; color: #fff; cursor: pointer; }
+  footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 0 16px 24px; }
+  @media (max-width: 560px) { .controls { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#lista">Pular para a lista de eventos</a>
+
+<header>
+  <h1>Campus <span>Events</span></h1>
+  <p>Encontre os eventos do seu campus em segundos.</p>
+  <span class="badge">Protótipo didático · eventos fictícios</span>
+</header>
+
+<main>
+  <form class="controls" role="search" onsubmit="return false">
+    <div>
+      <label for="busca">Buscar por título, local ou descrição</label>
+      <input id="busca" type="search" placeholder="Ex.: Python, auditório, carreira" autocomplete="off">
+    </div>
+    <div>
+      <label for="categoria">Categoria</label>
+      <select id="categoria">
+        <option value="">Todas</option>
+      </select>
+    </div>
+  </form>
+
+  <p id="status" role="status" aria-live="polite"></p>
+  <ul id="lista" class="grid" tabindex="-1"></ul>
+</main>
+
+<footer>Tech Metro · Rota A — Do Zero ao Projeto. Todos os eventos são fictícios.</footer>
+
+<script>
+  // Dados fictícios — não representam eventos oficiais.
+  const eventos = [
+    { titulo: "Introdução ao Python", categoria: "Workshop", data: "2026-11-03", hora: "19:00", local: "Laboratório 2", descricao: "Primeiros passos com variáveis, listas e laços em Python." },
+    { titulo: "Carreira em Tecnologia", categoria: "Palestra", data: "2026-11-05", hora: "10:00", local: "Auditório Central", descricao: "Como montar portfólio e se preparar para o primeiro estágio." },
+    { titulo: "Hackathon Ideias Rápidas", categoria: "Competição", data: "2026-11-08", hora: "08:00", local: "Bloco B", descricao: "Equipes criam um protótipo em seis horas a partir de um desafio." },
+    { titulo: "Git e GitHub na Prática", categoria: "Workshop", data: "2026-11-10", hora: "18:30", local: "Laboratório 4", descricao: "Versionamento, commits e colaboração com pull requests." },
+    { titulo: "IA Generativa e Ética", categoria: "Palestra", data: "2026-11-12", hora: "14:00", local: "Auditório Central", descricao: "Usos responsáveis de IA na vida acadêmica e profissional." },
+    { titulo: "Maratona de Lógica", categoria: "Competição", data: "2026-11-14", hora: "09:00", local: "Laboratório 1", descricao: "Desafios de lógica de programação resolvidos em duplas." }
+  ];
+
+  const busca = document.getElementById("busca");
+  const categoria = document.getElementById("categoria");
+  const lista = document.getElementById("lista");
+  const status = document.getElementById("status");
+
+  // Popula o filtro a partir dos próprios dados.
+  ["Workshop", "Palestra", "Competição"].forEach(c => categoria.add(new Option(c, c)));
+
+  // Remove acentos e caixa para que "logica" encontre "Lógica".
+  const normalizar = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const formatarData = iso => new Date(iso + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
+
+  function criarCard(e) {
+    const li = document.createElement("li");
+    li.className = "card";
+    li.dataset.cat = e.categoria;
+    // textContent evita injeção de HTML caso os dados venham de fora no futuro.
+    const add = (tag, texto, cls) => { const el = document.createElement(tag); el.textContent = texto; if (cls) el.className = cls; li.append(el); return el; };
+    add("span", e.categoria, "tag");
+    add("h2", e.titulo);
+    const meta = add("ul", "", "meta");
+    [["Data", formatarData(e.data)], ["Horário", e.hora], ["Local", e.local]].forEach(([k, v]) => {
+      const item = document.createElement("li");
+      const s = document.createElement("strong"); s.textContent = k + ": ";
+      item.append(s, v);
+      meta.append(item);
+    });
+    add("p", e.descricao);
+    return li;
+  }
+
+  function render() {
+    const termo = normalizar(busca.value);
+    const cat = categoria.value;
+    const filtrados = eventos.filter(e =>
+      (!cat || e.categoria === cat) &&
+      normalizar(`${e.titulo} ${e.local} ${e.descricao}`).includes(termo)
+    );
+
+    lista.replaceChildren(...filtrados.map(criarCard));
+
+    if (filtrados.length === 0) {
+      const vazio = document.createElement("li");
+      vazio.className = "empty";
+      vazio.style.gridColumn = "1 / -1";
+      const tituloVazio = document.createElement("strong");
+      tituloVazio.textContent = "Nenhum evento encontrado.";
+      const orientacao = document.createElement("span");
+      orientacao.textContent = "Tente outro termo ou escolha “Todas” as categorias.";
+      vazio.append(tituloVazio, document.createElement("br"), orientacao);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "Limpar filtros";
+      btn.onclick = () => { busca.value = ""; categoria.value = ""; render(); busca.focus(); };
+      vazio.append(document.createElement("br"), btn);
+      lista.append(vazio);
+    }
+    status.textContent = `${filtrados.length} de ${eventos.length} eventos exibidos.`;
+  }
+
+  busca.addEventListener("input", render);
+  categoria.addEventListener("change", render);
+  render();
+</script>
+</body>
+</html>
